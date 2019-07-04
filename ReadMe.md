@@ -22,5 +22,8 @@ Crop your images (pair always the two channels) to the region of interest and sa
 MouseID_StarterCells_cFosCondition_SliceNumber_SideoftheBrain_channel.tif (channel being 'cFos' or 'rabies').
 Save them in a specific folder
 ## step 3
-Run IlastikProjects/RabiesContentQuantification.ilp and load your ...rabies images. Check that it classifies it correctly and retrain if needed. Save the outputs following these guidelines: https://github.com/CellProfiler/CellProfiler/wiki/How-to-use-Pixel-Classification-in-CellProfiler
-
+Run IlastikProjects/RabiesContentQuantification.ilp and load your ...rabies images. Check that it classifies it correctly and retrain if needed. Save the outputs in a separate folder (e.g. IlastikOutput/) following these guidelines: https://github.com/CellProfiler/CellProfiler/wiki/How-to-use-Pixel-Classification-in-CellProfiler
+## step 4
+Run CellProfilerProtocols/RabiesContentQuantification.cpproj to get the tables
+## step 5
+TODO: Implement jupyter notebook
