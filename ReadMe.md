@@ -1,3 +1,5 @@
+# For RNAscope
+
 This is a pipeline to visualize and analyze the results of CellProfiler on RNAscope experiments.
 
 1. Take images in the SP8. Individual or tiled, doesn't matter. Do a z-stack and in Fiji make a maximum projection.
@@ -6,4 +8,19 @@ This is a pipeline to visualize and analyze the results of CellProfiler on RNAsc
 4. Modify the project to work with your images, and change the two output saving paths.
 5. Run it. It should produce a .csv file with the statistics, and an overlay image summarizing the results.
 6. Run jupyter notebook ==== in RNAscope-CellProfiler in github.
+
+# For Rabies-cFos quantification
+This pipeline aims to quantify the relative (to the full image) c-Fos staining in each cell infected with rabies.
+## step 1
+Take confocal images (current specifications below) of your rabies channel and your c-Fos channel.
+Resolution:  0.9240 pixels per micron
+Pixel size: 1.0823x1.0823 micron^2
+Objective used in SP8: 10x AIR
+Bits per pixel: 8 (grayscale LUT)
+## step 2
+Crop your images (pair always the two channels) to the region of interest and save the channels separately using this format:
+MouseID_StarterCells_cFosCondition_SliceNumber_SideoftheBrain_channel.tif (channel being 'cFos' or 'rabies').
+Save them in a specific folder
+## step 3
+Run IlastikProjects/RabiesContentQuantification.ilp and load your ...rabies images. Check that it classifies it correctly and retrain if needed. Save the outputs following these guidelines: https://github.com/CellProfiler/CellProfiler/wiki/How-to-use-Pixel-Classification-in-CellProfiler
 
