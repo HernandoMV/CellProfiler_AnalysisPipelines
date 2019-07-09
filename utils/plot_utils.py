@@ -1,6 +1,6 @@
 # functions to plot cool stuff
-import matplotlib
-import matplotlib.pyplot as plt
+#import matplotlib
+#import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 
@@ -25,3 +25,8 @@ def see_object(obj_number, df, segmented_image,original_image,crop_value):
     return new_im
 
 
+def plot_RabiesCell(imageFile, coordinates, cropWindowSize):
+    # imageFile is the path to the image
+    # coordinates is the [x,y] center of the cell
+    # cropWindowSize is the size in pixels of the window to cut
+    return coordinates
