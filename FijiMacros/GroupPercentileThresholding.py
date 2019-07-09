@@ -51,7 +51,7 @@ def FindThreholds(mainpath, listOfImages, quantArray):
 	IJ.log('Quantifying thresholds...')
 	percs = []
 	for q in quantArray:
-		percs.append(1 + percentile(pix, q)) #add 1 cause the threshold is inclusive	
+		percs.append(percentile(pix, q))	
 	return percs
 	
 def percentile(data, percentile):
