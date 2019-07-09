@@ -21,9 +21,14 @@ Bits per pixel: 8 (grayscale LUT)
 Crop your images (pair always the two channels) to the region of interest and save the channels separately using this format:
 MouseID_StarterCells_cFosCondition_SliceNumber_SideoftheBrain_channel.tif (channel being 'cFos' or 'rabies').
 Save them in a specific folder
+
+TODO: Create a fiji macro to do this faster and use always the same window to crop
+
 ## step 3
 Run IlastikProjects/RabiesContentQuantification.ilp and load your ...rabies images. Check that it classifies it correctly and retrain if needed. Save the outputs in a separate folder (e.g. IlastikOutput/) following these guidelines: https://github.com/CellProfiler/CellProfiler/wiki/How-to-use-Pixel-Classification-in-CellProfiler
 ## step 4
-Run CellProfilerProtocols/RabiesContentQuantification.cpproj to get the tables
+Run FijiMacros/GroupPercentileThresholding.py in Fiji to threshold the cFos channel.
 ## step 5
-TODO: Implement jupyter notebook
+Run CellProfilerProtocols/RabiesContentQuantification.cpproj to get the tables
+## step 6
+Run jupyter notebook
