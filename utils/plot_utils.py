@@ -49,9 +49,9 @@ def plotRabiesCell(seriesData, mainPath, window=30, lut='plasma'):
     
     # get the processed data
     PI_names = [mainPath + 'CellProfilerOutput/' + Base_name + '_rabies_outlines.tiff',
-                mainPath + 'CellProfilerOutput/' + Base_name + '_cFos_outlines_95.tiff',
-               mainPath + 'CellProfilerOutput/' + Base_name + '_cFos_outlines_98.tiff',
-               mainPath + 'CellProfilerOutput/' + Base_name + '_cFos_outlines_99.tiff']
+                mainPath + 'CellProfilerOutput/' + Base_name + '_cFos_outlines_low.tiff',
+               mainPath + 'CellProfilerOutput/' + Base_name + '_cFos_outlines_med.tiff',
+               mainPath + 'CellProfilerOutput/' + Base_name + '_cFos_outlines_high.tiff']
     ProcessedImage = getProcessedImage(PI_names)
     # crop
     ProcessedImage = cropImage(ProcessedImage, [coord_x, coord_y], window)

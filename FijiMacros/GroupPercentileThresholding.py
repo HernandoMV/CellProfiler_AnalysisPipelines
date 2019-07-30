@@ -80,7 +80,7 @@ def blurImage(ip):
 #Main 
 if __name__ in ['__builtin__', '__main__']:
 	IJ.run("Close All")
-	In_dir = DirectoryChooser("Select the directory containing your microCT reconstructed data").getDirectory()
+	In_dir = DirectoryChooser("Select the directory containing your cropped images").getDirectory()
 	#Directory to save stuff
 	Out_dir = In_dir[:-1] + "--GPTprocessed/"
 	if not os.path.exists(Out_dir):
@@ -92,6 +92,12 @@ if __name__ in ['__builtin__', '__main__']:
 
 	#get c-Fos
 	ListCfos = getCfosImages(In_dir)
+	#if it is empty stop
+	if len(ListCfos)==0:
+		os.rmdir(Out_dir)
+		sys.exit('No c-Fos images found')
+		
+	
 	#get unique MouseIDs
 	MouseIDs = UniqueMouseIDs(ListCfos)
 
@@ -100,7 +106,7 @@ if __name__ in ['__builtin__', '__main__']:
 		#get the list of cFos images for a specific mouse
 		MouseIDcFos = getMouseCfos(ListCfos, MouseID)
 		#find the threshold values using the quantiles
-		percentiles = [95, 98, 99]
+		percentiles = [98.5, 99.5, 99.9]
 		thresholds = FindThreholds(In_dir, MouseIDcFos, percentiles)
 		IJ.log('Thresholds for percentiles ' + str(percentiles) + ' selected to ' + str(thresholds))
 		#threshold and save images for each threshold value

@@ -29,6 +29,8 @@ Run IlastikProjects/RabiesContentQuantification.ilp and load your ...rabies imag
 ## step 4
 Run FijiMacros/GroupPercentileThresholding.py in Fiji to threshold the cFos channel.
 ## step 5
-Run CellProfilerProtocols/RabiesContentQuantification.cpproj to get the tables
+Run CellProfilerProtocols/RabiesContentQuantification.cpproj to get the tables.
+Here, drag the main folder to the Images field (first), and specify which percentile is low, med and high (NamesAndTypes)
+Change the input and output folders to the main directory in 'View output settings'
 ## step 6
 Run jupyter notebook
