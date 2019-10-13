@@ -1,6 +1,6 @@
 # Hernando M. Vergara, SWC
 # July 2019
-# Pipeline to crop (not yet) microscopy images and to calculate distinct thresholds,
+# Pipeline to calculate distinct thresholds,
 # per mouse ID, based on the quantiles (e.g. 98% of pixels discarded)
 
 from ij import IJ, ImagePlus, WindowManager
