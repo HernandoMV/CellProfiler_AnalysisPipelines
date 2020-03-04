@@ -1,5 +1,4 @@
 # For RNAscope
-
 This is a pipeline to visualize and analyze the results of CellProfiler on RNAscope experiments.
 
 1. Take images in the SP8. Individual or tiled, doesn't matter. Do a z-stack and in Fiji make a maximum projection.
@@ -7,7 +6,11 @@ This is a pipeline to visualize and analyze the results of CellProfiler on RNAsc
 3. Copy the Cell-profiler project file in the CellProfilerProtocols folder into the same directory.
 4. Modify the project to work with your images, and change the two output saving paths.
 5. Run it. It should produce a .csv file with the statistics, and an overlay image summarizing the results.
-6. Run jupyter notebook ==== in RNAscope-CellProfiler in github.
+6. Run jupyter notebook.
+
+## steps for working with slide-scanner
+1. Files are too big to be opened in Fiji, so they need to be cropped on import. To do this, open, using bio-formats, the low resolution version (.czi makes a piramid scheme), and draw an ROI over the region of interest and get the starting x, y, and width and height. Then calculate the binning (using the pixel number of the images), and correct for that during import.
+2. Split the channels and save following this format: AnimalID_Condition_Slide_Slice_Side(R/L)_Channel.tif
 
 # For Rabies-cFos quantification
 This pipeline aims to quantify the relative (to the full image) c-Fos staining in each cell infected with rabies.
