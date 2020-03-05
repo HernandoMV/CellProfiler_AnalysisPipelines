@@ -9,8 +9,13 @@ This is a pipeline to visualize and analyze the results of CellProfiler on RNAsc
 6. Run jupyter notebook.
 
 ## steps for working with slide-scanner
-1. Files are too big to be opened in Fiji, so they need to be cropped on import. To do this, open, using bio-formats, the low resolution version (.czi makes a piramid scheme), and draw an ROI over the region of interest and get the starting x, y, and width and height (in ROI manager More->List). Then calculate the binning (using the pixel number of the images), and correct for that during import.
-2. Split the channels and save following this format: AnimalID_Condition_Slide_Slice_Side(R/L)_Channel.tif
+1a. Files are too big to be opened in Fiji, so they need to be cropped on import. To do this, open, using bio-formats, the low resolution version (.czi makes a piramid scheme), and draw an ROI over the region of interest and get the starting x, y, and width and height (in ROI manager More->List). Then calculate the binning (using the pixel number of the images), and correct for that during import.
+1b. Alternatively, crop them directly in the zeiss software and save them.
+
+2. Manually correct the intensity of the channels in Fiji, transform images to 8-bit, and save images following this format: AnimalID_Condition_Slide_Slice_Side(R/L).tif
+
+3. Generate ROIs (if you use the full image above, still follow the split of the channels). Draw ROIs in the image, split the channels, and save them appending this information in the file name:
+AnimalID_Condition_Slide_Slice_Side(R/L)_ROI_Channel.tif
 
 # For Rabies-cFos quantification
 This pipeline aims to quantify the relative (to the full image) c-Fos staining in each cell infected with rabies.
