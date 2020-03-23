@@ -26,12 +26,10 @@ Pixel size: 1.0823x1.0823 micron^2
 Objective used in SP8: 10x AIR
 Bits per pixel: 8 (grayscale LUT)
 ## step 2
-Crop your images (pair always the two channels) to the region of interest and save the channels separately using this format:
-MouseID_StarterCells_cFosCondition_SliceNumber_SideoftheBrain_channel.tif (channel being 'cFos' or 'rabies').
-Save them in a specific folder
-
-TODO: Create a fiji macro to do this faster and use always the same window to crop
-
+Run CropLIF.ijm in FijiMacros. This will:
+-Crop your images (pair always the two channels) to the region of interest and save the channels separately using this format:
+MouseID_StarterCells_cFosCondition_SlideSliceNumber_SideoftheBrain_channel.tif (channel being 'cFos' or 'rabies').
+-Save them in a specific folder
 ## step 3
 Run IlastikProjects/RabiesContentQuantification.ilp and load your ...rabies images. Check that it classifies it correctly and retrain if needed. Save the outputs in a separate folder (e.g. IlastikOutput/) following these guidelines: https://github.com/CellProfiler/CellProfiler/wiki/How-to-use-Pixel-Classification-in-CellProfiler
 ## step 4
@@ -41,4 +39,5 @@ Run CellProfilerProtocols/RabiesContentQuantification.cpproj to get the tables.
 Here, drag the main folder to the Images field (first), and specify which percentile is low, med and high (NamesAndTypes)
 Change the input and output folders to the main directory in 'View output settings'
 ## step 6
+Activate conda environment imageanalysis [TODO: create requirements]
 Run jupyter notebook
