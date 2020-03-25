@@ -17,6 +17,11 @@ This is a pipeline to visualize and analyze the results of CellProfiler on RNAsc
 3. Generate ROIs (if you use the full image above, still follow the split of the channels). Draw ROIs in the image, split the channels, and save them appending this information in the file name:
 AnimalID_Condition_Slide_Slice_Side(R/L)_ROI_Channel.tif
 
+NEW IMPLEMENTATION:
+All of the above is implemented through two scripts to automatize the process. 
+These scripts can be found in repository Fiji_Custom.
+They are CZI_SlideScanner_ROIsubdivider.py and Group_convert_and_enhance.py
+
 # For Rabies-cFos quantification
 This pipeline aims to quantify the relative (to the full image) c-Fos staining in each cell infected with rabies.
 ## step 1
