@@ -1,28 +1,29 @@
 # functions to plot cool stuff
-#import matplotlib
-#import matplotlib.pyplot as plt
+# import matplotlib
+# import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 import pandas as pd
 from matplotlib import cm
+import matplotlib.pyplot as plt
 
-def see_object(obj_number, df, segmented_image,original_image,crop_value):
-    #find the coordinates of the object
+def see_object(obj_number, df, segmented_image, original_image, crop_value):
+    # find the coordinates of the object
     coords = df.ix[obj_number][['Location_Center_X', 'Location_Center_Y']]
     x_coord = int(np.asmatrix(coords[[0]].astype(int)))
     y_coord = int(np.asmatrix(coords[[1]].astype(int)))
-    #find the cropping points
+    # find the cropping points
     cpx1 = max(0, x_coord - crop_value)
     cpy1 = max(0, y_coord - crop_value)
     cpx2 = min(segmented_image.size[0], x_coord + crop_value)
     cpy2 = min(segmented_image.size[1], y_coord + crop_value)
-    #crop images
+    # crop images
     seg_im = segmented_image.crop((cpx1, cpy1, cpx2, cpy2))
     ori_im = original_image.crop((cpx1, cpy1, cpx2, cpy2))
-    #produce the figure
-    new_im = Image.new('RGB', (crop_value*4, crop_value*2))
+    # produce the figure
+    new_im = Image.new('RGB', (crop_value * 4, crop_value * 2))
     new_im.paste(ori_im, (0, 0))
-    new_im.paste(seg_im, (crop_value*2, 0))
+    new_im.paste(seg_im, (crop_value * 2, 0))
 
     return new_im
 
@@ -30,9 +31,14 @@ def see_object(obj_number, df, segmented_image,original_image,crop_value):
 def plotRabiesCell(seriesData, mainPath, window=30, lut='plasma'):
     # makes a composite plot to show the data and the processed data
     assert isinstance(seriesData, pd.Series), 'Data not pandas series'
-    
+
     # find path name of image eg: 907817_D1_Punish_Slice1_Ipsi_rabies.tif
-    Base_name = seriesData[['AnimalID', 'StarterCells', 'cFosCondition', 'SliceNumber', 'BrainSide']].str.cat(sep='_')
+    Base_name = seriesData[[
+        'AnimalID',
+        'StarterCells',
+        'cFosCondition',
+        'SliceNumber',
+        'BrainSide']].str.cat(sep='_')
     RI_name = Base_name + '_rabies.tif'
     CI_name = Base_name + '_cfos.tif'
     # open
@@ -42,43 +48,43 @@ def plotRabiesCell(seriesData, mainPath, window=30, lut='plasma'):
     coord_x = int(seriesData['Center_X'])
     coord_y = int(seriesData['Center_Y'])
     RI_Image = cropImage(RI_Image, [coord_x, coord_y], window)
-    CI_Image = cropImage(CI_Image, [coord_x, coord_y], window)   
+    CI_Image = cropImage(CI_Image, [coord_x, coord_y], window)
     # recolor
     RI_Image = ChangeLUT(RI_Image, lut)
     CI_Image = ChangeLUT(CI_Image, lut)
-    
+
     # get the processed data
     PI_names = [mainPath + 'CellProfilerOutput/' + Base_name + '_rabies_outlines.tiff',
                 mainPath + 'CellProfilerOutput/' + Base_name + '_cFos_outlines_low.tiff',
-               mainPath + 'CellProfilerOutput/' + Base_name + '_cFos_outlines_med.tiff',
-               mainPath + 'CellProfilerOutput/' + Base_name + '_cFos_outlines_high.tiff']
+                mainPath + 'CellProfilerOutput/' + Base_name + '_cFos_outlines_med.tiff',
+                mainPath + 'CellProfilerOutput/' + Base_name + '_cFos_outlines_high.tiff']
     ProcessedImage = getProcessedImage(PI_names)
     # crop
     ProcessedImage = cropImage(ProcessedImage, [coord_x, coord_y], window)
-    
+
     # produce the figure
-    new_im = Image.new('RGB', (window*6, window*2))
+    new_im = Image.new('RGB', (window * 6, window * 2))
     new_im.paste(RI_Image, (0, 0))
-    new_im.paste(CI_Image, (window*2, 0))
-    new_im.paste(ProcessedImage, (window*4, 0))
-    
+    new_im.paste(CI_Image, (window * 2, 0))
+    new_im.paste(ProcessedImage, (window * 4, 0))
+
     # resize
     new_im = new_im.resize((300, 100), Image.ANTIALIAS)
-    
-    #return
+
+    # return
     return new_im
 
 
 def cropImage(im, coords, crop_value):
-    #find the coordinates of the object
+    # find the coordinates of the object
     x_coord = int(coords[0])
     y_coord = int(coords[1])
-    #find the cropping points
+    # find the cropping points
     cpx1 = max(0, x_coord - crop_value)
     cpy1 = max(0, y_coord - crop_value)
     cpx2 = min(im.size[0], x_coord + crop_value)
     cpy2 = min(im.size[1], y_coord + crop_value)
-    #crop images
+    # crop images
     croppedIm = im.crop((cpx1, cpy1, cpx2, cpy2))
     return croppedIm
 
@@ -106,3 +112,43 @@ def getProcessedImage(pathsToImages):
 
     return out_im
 
+
+def plot_pie(data_frame, column_names=None, cutoff=0, ax=None, **plot_kwargs):
+    # Plots a pie chart of combination of channels
+
+    if ax is None:
+        ax = plt.gca()
+
+    BinMat = data_frame[column_names] > cutoff
+
+    # Measure combinations
+    lab1 = column_names[0] + ' +'
+    lab2 = column_names[1] + ' +'
+    lab3 = lab1 + '\n' + lab2
+    labels = lab1, lab2, lab3
+
+    # Cells possitive for channel 1
+    C1Pos = BinMat[BinMat[column_names[0]]] == True
+    d1PosCellsID = set(C1Pos.index)
+    # Cells possitive for channel 2
+    C2Pos = BinMat[BinMat[column_names[1]]] == True
+    d2PosCellsID = set(C2Pos.index)
+
+    comb1 = (d1PosCellsID - d2PosCellsID)
+    comb2 = (d2PosCellsID - d1PosCellsID)
+    comb3 = (d2PosCellsID & d1PosCellsID)
+
+    # Create a Pie Chart
+    # Data to plot
+    sizes = [len(comb1), len(comb2), len(comb3)]
+    colors = ['yellowgreen', 'lightcoral', 'lightskyblue']
+    explode = (0, 0, 0)  # explode 1st slice
+
+    # Plot
+    ax.pie(
+        sizes, explode=explode, labels=labels, colors=colors,
+        autopct='%1.1f%%', shadow=True, startangle=140)
+
+    ax.axis('equal')
+
+    return ax
