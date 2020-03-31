@@ -6,6 +6,9 @@ import numpy as np
 import pandas as pd
 from matplotlib import cm
 import matplotlib.pyplot as plt
+import os
+import random
+
 
 def see_object(obj_number, df, segmented_image, original_image, crop_value):
     # find the coordinates of the object
@@ -152,3 +155,71 @@ def plot_pie(data_frame, column_names=None, cutoff=0, ax=None, **plot_kwargs):
     ax.axis('equal')
 
     return ax
+
+
+def make_core_name(mouse, expcon, region, manroi):
+    mrpieces = manroi.split('-')
+    name = '_'.join([mouse,
+                     expcon,
+                     'slide-' + mrpieces[0],
+                     'slice-' + mrpieces[1],
+                     'manualROI-' + mrpieces[2] + '-' + region])
+    return name
+
+
+def summary_image_name_maker(directory, corename):
+    imname = '_'.join([corename,
+                       'summaryImage.tif'])
+    return os.path.join(directory, imname)
+
+
+def create_merge_ROI(roi_paths):
+    # open images
+    dapi_image = Image.open(roi_paths[0])
+    c1_image = Image.open(roi_paths[1])
+    c2_image = Image.open(roi_paths[2])
+    # create a merge of three images
+    roi_image = Image.merge('RGB', [c2_image, c1_image, dapi_image])
+
+    return roi_image
+
+
+def get_channel_name(corename, roi, channel):
+    roiname = '-'.join(['squareROI', str(roi)])
+    channame = '-'.join(['channel', str(channel)])
+
+    return '_'.join([corename, roiname, channame])
+
+
+def get_roi_path(directory, corename, roi, channel):
+    # builds the path to the channel image
+    im_name = get_channel_name(corename, roi, channel) + '.tif'
+
+    return os.path.join(directory, im_name)
+
+
+def get_cp_path(directory, imname):
+    modname = imname + '_Result_Overlay.tiff'
+
+    return os.path.join(directory, modname)
+
+
+def get_concat_h(im1, im2):
+    dst = Image.new('RGB', (im1.width + im2.width, im1.height))
+    dst.paste(im1, (0, 0))
+    dst.paste(im2, (im1.width, 0))
+    return dst
+
+
+def get_random_rois(df, mouse, manroi, k):
+    roipieces = manroi.split('-')
+    slide = roipieces[0]
+    mysl = roipieces[1]
+    side = roipieces[2]
+
+    conds = np.logical_and(df.AnimalID == mouse, df.Slide == slide)
+    conds = np.logical_and(df.Slice == mysl, conds)
+    conds = np.logical_and(df.Side == side, conds)
+    unique_rois = df[conds].ROI.unique()
+
+    return random.sample(list(unique_rois), k)

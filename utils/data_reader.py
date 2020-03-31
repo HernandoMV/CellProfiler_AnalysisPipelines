@@ -142,6 +142,7 @@ def D1D2_data_reader(CPpath):
         'ExperimentalCondition',
         'Slide',
         'Slice',
+        'Side',
         'AP',
         'ROI',
         'ObjectNumber',
