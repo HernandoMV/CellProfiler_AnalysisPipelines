@@ -8,7 +8,7 @@ This is a pipeline to visualize and analyze the results of CellProfiler on RNAsc
 5. Run it. It should produce a .csv file with the statistics, and an overlay image summarizing the results.
 6. Run jupyter notebook.
 
-## steps for working with slide-scanner
+## steps for working with slide-scanner data
 1a. Files are too big to be opened in Fiji, so they need to be cropped on import. To do this, open, using bio-formats, the low resolution version (.czi makes a piramid scheme), and draw an ROI over the region of interest and get the starting x, y, and width and height (in ROI manager More->List). Then calculate the binning (using the pixel number of the images), and correct for that during import.
 1b. Alternatively, crop them directly in the zeiss software and save them.
 
@@ -17,7 +17,7 @@ This is a pipeline to visualize and analyze the results of CellProfiler on RNAsc
 3. Generate ROIs (if you use the full image above, still follow the split of the channels). Draw ROIs in the image, split the channels, and save them appending this information in the file name:
 AnimalID_Condition_Slide_Slice_Side(R/L)_ROI_Channel.tif
 
-NEW IMPLEMENTATION:
+### NEW IMPLEMENTATION:
 All of the above is implemented through two scripts to automatize the process. 
 These scripts can be found in repository Fiji_Custom.
 They are CZI_SlideScanner_ROIsubdivider.py and Group_convert_and_enhance.py
