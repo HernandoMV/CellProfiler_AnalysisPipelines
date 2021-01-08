@@ -78,6 +78,91 @@ def plotRabiesCell(seriesData, mainPath, window=30, lut='plasma'):
     return new_im
 
 
+def plotPH3Cell(seriesData, mainPath, window=30, lut='plasma'):
+    # makes a composite plot to show the data and the processed data
+    assert isinstance(seriesData, pd.Series), 'Data not pandas series'
+
+    # find path name of image eg:
+    # A2A01_95_Slide-1_slice-6_manualROI-R-Tail_squareROI-1_channel-1.tif
+    Base_name = seriesData[['AnimalID', 'ExperimentalCondition']].str.cat(sep='_') + \
+        '_Slide-' + seriesData.Slide + \
+        '_slice-' + seriesData.Slice + '_manualROI-' + seriesData.Side + '-' + seriesData.AP + \
+        '_squareROI-' + seriesData.ROI + '_'
+
+    C2name = Base_name + 'channel-2.tif'
+    C3name = Base_name + 'channel-3.tif'
+    C4name = Base_name + 'channel-4.tif'
+
+    part2 = '/'.join(seriesData.PathName_Channel1.split('\\'))[2:]
+    images_path = '/mnt/c' + part2 + '/'
+    # open
+    c2_image = Image.open(images_path + C2name).convert('L')
+    c3_image = Image.open(images_path + C3name).convert('L')
+    c4_image = Image.open(images_path + C4name).convert('L')
+    # crop
+    coord_x = int(seriesData['Center_X'])
+    coord_y = int(seriesData['Center_Y'])
+    c2_image = cropImage(c2_image, [coord_x, coord_y], window)
+    c3_image = cropImage(c3_image, [coord_x, coord_y], window)
+    c4_image = cropImage(c4_image, [coord_x, coord_y], window)
+    # recolor
+    c2_image = ChangeLUT(c2_image, lut)
+    c3_image = ChangeLUT(c3_image, lut)
+    c4_image = ChangeLUT(c4_image, lut)
+
+    # get the processed data
+    PI_name = mainPath + Base_name + 'channel-1_Result_Overlay.tiff'
+    ProcessedImage = Image.open(PI_name)
+    # crop
+    ProcessedImage = cropImage(ProcessedImage, [coord_x, coord_y], window)
+
+    # produce the figure
+    new_im = Image.new('RGB', (window * 8, window * 2))
+    new_im.paste(ProcessedImage, (0, 0))
+    new_im.paste(c2_image, (window * 2, 0))
+    new_im.paste(c3_image, (window * 4, 0))
+    new_im.paste(c4_image, (window * 6, 0))
+
+    # resize
+    new_im = new_im.resize((400, 100), Image.ANTIALIAS)
+
+    # return
+    return new_im
+
+
+def plotPH3Channel(seriesData, channel=1, window=30, lut='plasma'):
+    # plots a single channel
+    assert isinstance(seriesData, pd.Series), 'Data not pandas series'
+
+    # find path name of image eg:
+    # A2A01_95_Slide-1_slice-6_manualROI-R-Tail_squareROI-1_channel-1.tif
+    Base_name = seriesData[['AnimalID', 'ExperimentalCondition']].str.cat(sep='_') + \
+        '_Slide-' + seriesData.Slide + \
+        '_slice-' + seriesData.Slice + '_manualROI-' + seriesData.Side + '-' + seriesData.AP + \
+        '_squareROI-' + seriesData.ROI + '_'
+
+    Cname = Base_name + 'channel-' + str(channel) + '.tif'
+
+    part2 = '/'.join(seriesData.PathName_Channel1.split('\\'))[2:]
+    images_path = '/mnt/c' + part2 + '/'
+    # open
+    c_image = Image.open(images_path + Cname).convert('L')
+
+    # crop
+    coord_x = int(seriesData['Center_X'])
+    coord_y = int(seriesData['Center_Y'])
+    c_image = cropImage(c_image, [coord_x, coord_y], window)
+
+    # recolor
+    c_image = ChangeLUT(c_image, lut)
+
+    # resize
+    c_image = c_image.resize((100, 100), Image.ANTIALIAS)
+
+    # return
+    return c_image
+
+
 def cropImage(im, coords, crop_value):
     # find the coordinates of the object
     x_coord = int(coords[0])

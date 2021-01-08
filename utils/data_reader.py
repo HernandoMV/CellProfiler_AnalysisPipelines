@@ -163,6 +163,62 @@ def D1D2_data_reader(CPpath):
     return df_comb
 
 
+def PH3_data_reader(CPpath):
+    # reads data from CellProfiler output
+    # find which kind of information is in the path
+    filepathsCSV = glob.glob(CPpath + '*.csv')
+    filenamesCSV = [os.path.basename(i) for i in filepathsCSV]
+
+    # check if empty
+    assert len(filenamesCSV) != 0, 'No .csv files found in directory'
+
+    # check if 'Nuclei.csv' is in the directory and read
+    co_filename = 'Nuclei.csv'
+    assert co_filename in filenamesCSV, 'Could not find file {0}'.format(co_filename)
+    cell_objects = pd.read_csv(open(CPpath + co_filename))
+    cell_objects = cell_objects.apply(pd.to_numeric)
+
+    # check if 'Image.csv' is in the directory and read
+    id_filename = 'Image.csv'
+    assert id_filename in filenamesCSV, 'Could not find file {0}'.format(id_filename)
+    image_data = pd.read_csv(open(CPpath + id_filename))
+
+    # parse the data in the title of the images to get info about the experiment in the df format
+    df_parsed = image_data.apply(parse_image_info, col_name='FileName_Channel1', axis=1)
+
+    # merge the two datasets
+    df_comb = pd.merge(cell_objects, df_parsed, on='ImageNumber')
+
+    # select and reformat the columns
+    df_comb = df_comb[[
+        'AnimalID',
+        'ExperimentalCondition',
+        'Slide',
+        'Slice',
+        'Side',
+        'AP',
+        'ROI',
+        'ObjectNumber',
+        'Intensity_MedianIntensity_Channel2',
+        'Intensity_MedianIntensity_Channel3',
+        'Intensity_MedianIntensity_Channel4',
+        'Location_Center_X',
+        'Location_Center_Y',
+        'PathName_Channel1']]
+
+    df_comb = df_comb.rename(columns={'Intensity_MedianIntensity_Channel2': 'MedianI_C2',
+                                      'Intensity_MedianIntensity_Channel3': 'MedianI_C3',
+                                      'Intensity_MedianIntensity_Channel4': 'MedianI_C4',
+                                      'Location_Center_X': 'Center_X',
+                                      'Location_Center_Y': 'Center_Y'})
+
+    df_comb["AnimalID"] = df_comb["AnimalID"].astype("category")
+    df_comb["ExperimentalCondition"] = df_comb["ExperimentalCondition"].astype("category")
+    df_comb["PathName_Channel1"] = df_comb["PathName_Channel1"].astype("category")
+
+    return df_comb
+
+
 def parse_image_info(df, col_name):
     # add columns to the dataset with information about the experiment
     # The format expected looks like this:
@@ -175,6 +231,21 @@ def parse_image_info(df, col_name):
     df['Side'] = name_pieces[4].split('-')[1]
     df['AP'] = name_pieces[4].split('-')[2]
     df['ROI'] = name_pieces[5].split('-')[1]
+
+    return df
+
+
+def parse_image_info_short(df, col_name):
+    # add columns to the dataset with information about the experiment
+    # The format expected looks like this:
+    # CONT01_control_slice-1_manualROI-L-TailPosterior_squareROI-1_channel-1.tif
+    name_pieces = df[col_name].split('_')
+    df['AnimalID'] = name_pieces[0]
+    df['ExperimentalCondition'] = name_pieces[1]
+    df['Slice'] = name_pieces[2].split('-')[1]
+    df['Side'] = name_pieces[3].split('-')[1]
+    df['AP'] = name_pieces[3].split('-')[2]
+    df['ROI'] = name_pieces[4].split('-')[1]
 
     return df
 
