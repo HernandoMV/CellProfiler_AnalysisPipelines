@@ -1,3 +1,18 @@
+# Inmuno_4channels_analysis.ipynb
+This pipeline analyses PH3 data acquired with the Slide Scanner microscope, and outputs:
+ - identification of cells of interest (PH3+) and whether they are D1 or D2
+ - the position of cells of interest in the ARA
+ The process uses multiple tools and is the following:
+ 1. Slice brains (A2A x Ai14) at 30um
+ 2. Stain for DARPP32 in green and PH3 in far red, and DAPI
+ 3. Image at 40x in the Slide Scanner the full slices
+ 4. Process them with They are CZI_SlideScanner_ROIsubdivider.py (in Fiji Custom repo)
+ 5. Run Group_convert_and_enhance.py (in Fiji Custom repo)
+ 6. Find the corresponding ARA slices (output of CZI_SlideScanner_ROIsubdivider.py) in MoBIE, save position and screenshot (see Histology_to_ARA repo)
+ 7. Register the slices using elastix (**TODO**) (in repo RegistrationToAllen)
+ 8. Run the notebook
+
+
 # For RNAscope
 This is a pipeline to visualize and analyze the results of CellProfiler on RNAscope experiments.
 
