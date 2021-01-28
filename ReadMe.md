@@ -8,9 +8,11 @@ This pipeline analyses PH3 data acquired with the Slide Scanner microscope, and 
  3. Image at 40x in the Slide Scanner the full slices
  4. Process them with They are CZI_SlideScanner_ROIsubdivider.py (in Fiji Custom repo)
  5. Run Group_convert_and_enhance.py (in Fiji Custom repo)
- 6. Find the corresponding ARA slices (output of CZI_SlideScanner_ROIsubdivider.py) in MoBIE, save position and screenshot (see Histology_to_ARA repo)
- 7. Register the slices using elastix (**TODO**) (in repo RegistrationToAllen)
- 8. Run the notebook
+ 6. Find cells using cellpose (**TODO**)
+ 7. Run Inmuno_4channels_20210107.cpproj in CellProfiler_protocols (**TODO**)
+ 8. Find the corresponding ARA slices (output of CZI_SlideScanner_ROIsubdivider.py) in MoBIE, save position and screenshot (see Histology_to_ARA repo)
+ 9. Register the slices using elastix (**TODO**) (in repo RegistrationToAllen)
+ 10. Run the notebook (**TODOs**)
 
 
 # For RNAscope
