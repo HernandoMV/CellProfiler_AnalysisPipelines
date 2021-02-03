@@ -202,6 +202,9 @@ def PH3_data_reader(CPpath):
         'Intensity_MedianIntensity_Channel2',
         'Intensity_MedianIntensity_Channel3',
         'Intensity_MedianIntensity_Channel4',
+        'Intensity_MeanIntensity_Channel2',
+        'Intensity_MeanIntensity_Channel3',
+        'Intensity_MeanIntensity_Channel4',
         'Location_Center_X',
         'Location_Center_Y',
         'PathName_Channel1']]
@@ -209,6 +212,9 @@ def PH3_data_reader(CPpath):
     df_comb = df_comb.rename(columns={'Intensity_MedianIntensity_Channel2': 'MedianI_C2',
                                       'Intensity_MedianIntensity_Channel3': 'MedianI_C3',
                                       'Intensity_MedianIntensity_Channel4': 'MedianI_C4',
+                                      'Intensity_MeanIntensity_Channel2': 'MeanI_C2',
+                                      'Intensity_MeanIntensity_Channel3': 'MeanI_C3',
+                                      'Intensity_MeanIntensity_Channel4': 'MeanI_C4',
                                       'Location_Center_X': 'Center_X',
                                       'Location_Center_Y': 'Center_Y'})
 

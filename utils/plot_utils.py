@@ -308,3 +308,21 @@ def get_random_rois(df, mouse, manroi, k):
     unique_rois = df[conds].ROI.unique()
 
     return random.sample(list(unique_rois), k)
+
+
+def plot_channel_of_indexes(fig, axs, indexes, df, channel, window, lut):
+    ncells = axs.shape[1]
+    for row_number, set_of_idx in enumerate(indexes):
+        for col_number in range(ncells):
+            ax = axs[row_number, col_number]
+            ax.grid(False)
+            ax.axis('off')
+            # evaluate if there is something to be plotted
+            if col_number < len(set_of_idx):
+                i = set_of_idx[col_number]
+                # plt.title(str(thresholds[counter]) + " - " + str(i))
+                CellImage = plotPH3Channel(df.loc[i], channel=channel, window=window, lut=lut)
+                ax.imshow(CellImage)
+    fig.tight_layout()
+
+    return(fig)
