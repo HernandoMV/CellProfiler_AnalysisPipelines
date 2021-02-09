@@ -1,13 +1,14 @@
 # functions to plot cool stuff
 # import matplotlib
 # import matplotlib.pyplot as plt
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import pandas as pd
 from matplotlib import cm
 import matplotlib.pyplot as plt
 import os
 import random
+from utils import generic_functions as gf
 
 
 def see_object(obj_number, df, segmented_image, original_image, crop_value):
@@ -326,3 +327,209 @@ def plot_channel_of_indexes(fig, axs, indexes, df, channel, window, lut):
     fig.tight_layout()
 
     return(fig)
+
+
+def draw_ellipse(image, bounds, width=1, outline='white', antialias=4):
+    """Improved ellipse drawing function, based on PIL.ImageDraw."""
+    # from https://stackoverflow.com/questions/32504246/draw-ellipse-in-python-pil-with-line-thickness
+
+    # Use a single channel image (mode='L') as mask.
+    # The size of the mask can be increased relative to the imput image
+    # to get smoother looking results
+    mask = Image.new(
+        size=[int(dim * antialias) for dim in image.size],
+        mode='L', color='black')
+    draw = ImageDraw.Draw(mask)
+
+    # draw outer shape in white (color) and inner shape in black (transparent)
+    for offset, fill in (width / -2.0, 'white'), (width / 2.0, 'black'):
+        left, top = [(value + offset) * antialias for value in bounds[:2]]
+        right, bottom = [(value - offset) * antialias for value in bounds[2:]]
+        draw.ellipse([left, top, right, bottom], fill=fill)
+
+    # downsample the mask using PIL.Image.LANCZOS
+    # (a high-quality downsampling filter).
+    mask = mask.resize(image.size, Image.LANCZOS)
+    # paste outline color to input image through the mask
+    image.paste(outline, mask=mask)
+
+
+def inspect_cells_in_ROI(df, indexes_to_plot, g_name, channels, cir_radius, binning=1,
+                         tdtomato_thr=-1, plot_cellprofiler=True):
+    '''
+    circles the cells in the dataset in the selected channels. It also shows the summary
+    image of the cell profiler
+
+    param df: dataframe. Needs data path as attributes
+    param indexes_to_plot: set of indexes to plot from
+    param g_name: specific ROI name in style 'PH301-1-3-R-Tail-12'
+    param channels: channels to show in form of list
+    param cir_radius: radius for the circles
+    param binning: how much to bin the images
+    param tdtomato_thr: to differentiate between d1 and d2
+    param plot_cellprofiler: boolean to show the cell profiler output
+    '''
+    # subselect the dataframe
+    df_cir = df[df.group_name == g_name]
+    # get the indexes that need circling
+    idxs_to_circle = np.intersect1d(indexes_to_plot, df_cir.index.values)
+
+    # get coordinates and colors of circles to draw
+    cir_coord_list = []
+    cir_color_list = []
+    # rescale radius
+    cir_radius = int(cir_radius / binning)
+    for index_of_cell in idxs_to_circle:
+        # find coordinates of cells
+        c_x = int(df.loc[index_of_cell].Center_X / binning)
+        c_y = int(df.loc[index_of_cell].Center_Y / binning)
+        # define coordinates of circle
+        cir_coord = (c_x - cir_radius, c_y - cir_radius, c_x + cir_radius, c_y + cir_radius)
+        cir_coord_list.append(cir_coord)
+
+        # TODO: make a legend for this
+        # assign different color
+        if df.loc[index_of_cell].MeanI_C3 > tdtomato_thr:
+            cir_color_list.append('red')
+        else:
+            cir_color_list.append('green')
+
+    # list to store the images
+    im_list = []
+
+    # get the processed data if asked to
+    if plot_cellprofiler:
+        concat_im = get_cp_image(df_cir)
+        # resize
+        new_size = tuple([int(x / binning) for x in concat_im.size])
+        concat_im = concat_im.resize(new_size, Image.ANTIALIAS)
+        # draw circles
+        for col, cir_coord in enumerate(cir_coord_list):
+            draw_ellipse(concat_im, cir_coord, outline=cir_color_list[col], width=cir_radius / 4)
+
+    # for each channel
+    for channel in channels:
+        imdir = os.path.join(df.attrs['datapath'],
+                             'ROIs--Gce_processed',
+                             gf.make_image_name_from_series(df_cir.iloc[0], channel=channel))
+        im = Image.open(imdir)
+        im = im.convert('RGB')
+        # resize
+        new_size = tuple([int(x / binning) for x in im.size])
+        im = im.resize(new_size, Image.ANTIALIAS)
+        im_list.append(im)
+        # draw circles
+        for col, cir_coord in enumerate(cir_coord_list):
+            draw_ellipse(im, cir_coord, outline=cir_color_list[col], width=cir_radius / 4)
+
+    # concatenate images
+    if plot_cellprofiler:
+        for im in im_list:
+            concat_im = get_concat_h(concat_im, im)
+    else:
+        concat_im = im_list[0]
+        for im in im_list[1:]:
+            concat_im = get_concat_h(concat_im, im)
+
+    return concat_im
+
+
+def show_object_ids(df, g_name, fontsize):
+    '''
+    shows the summary image of the cell profiler with ids of the cells
+
+    param df: dataframe. Needs data path as attributes
+    param g_name: specific ROI name in style 'PH301-1-3-R-Tail-12'
+    param fontsize: size of font
+    '''
+    # subselect the dataframe
+    df_cir = df[df.group_name == g_name]
+
+    # get the processed data
+    proc_im = get_cp_image(df_cir)
+
+    fnt = ImageFont.truetype("/mnt/c/Windows/Fonts/Arial.ttf", fontsize)
+    d = ImageDraw.Draw(proc_im)
+    for idx in df_cir.index.values:
+        d.text((df_cir.loc[idx].Center_X, df_cir.loc[idx].Center_Y), str(idx),
+               font=fnt, fill=(255, 0, 0))
+
+    return(proc_im)
+
+
+def get_cp_image(df):
+    '''
+    opens the cell profiler output image of the first object in a dataframe
+    param df: dataframe. Needs data path as attributes
+    '''
+    Base_name = gf.make_image_name_from_series(df.iloc[0], channel=1).split('.tif')[0]
+    PI_name = df.attrs['datapath'] + 'Cell_profiler_output/' + Base_name + '_Result_Overlay.tiff'
+    concat_im = Image.open(PI_name)
+
+    return concat_im
+
+
+def get_reg_image(df):
+    '''
+    opens the image for registration of the first object in a dataframe
+    param df: dataframe. Needs data path as attributes
+    '''
+    reg_path = '/ROIs/000_Slices_for_ARA_registration/'
+    Base_name = gf.make_image_name_from_series(df.iloc[0], channel=1).split('_manualROI')[0]
+    PI_name = df.attrs['datapath'] + reg_path + Base_name + '.tif'
+    reg_im = Image.open(PI_name)
+
+    return reg_im
+
+
+def get_concat_image_from_rois(df_raw, indexes_to_plot, sel_mroi_name, channel,
+                               cir_radius, binning=1, tdtomato_thr=-1):
+    '''
+    reconstructs the image from square rois and their initial positions
+    param df_raw: dataframe with information about the cells
+    param indexes_to_plot: set of indexes to plot from
+    param sel_mroi_name: specific ROI name in style 'PH301-1-3-R-Tail'
+    param channel: channel to plot
+    param binning: binarization value
+    '''
+    # subselect dataframe
+    df = df_raw[df_raw.manual_roi_name == sel_mroi_name]
+
+    # get the position of every ROI in a dataframe
+    manual_roi_path = gf.get_manual_rois_file_path(df)
+    rois_df = gf.create_dataframe_from_roi_file(manual_roi_path)
+
+    # find the width and height (CURRENTLY THEY HAVE TO BE THE SAME (L)) of the rois
+    # if there is only one roi get it from the image
+
+    # otherwise calculate them based on positions
+    L = gf.get_roi_size(rois_df.high_res_x_pos)
+    if L == 0:  # all rois lie in a column
+        L = gf.get_roi_size(rois_df.high_res_y_pos)
+    # get the top left corner to anchor the images, and the bottom right
+    xmin, xmax, ymin, ymax = gf.get_roi_position_extremes(rois_df)
+    # create the big image
+    im_width = int((xmax + L - xmin) / binning)
+    im_height = int((ymax + L - ymin) / binning)
+    im = Image.new('RGB', (im_width, im_height))
+    # text object
+    d = ImageDraw.Draw(im)
+    fnt = ImageFont.truetype("/mnt/c/Windows/Fonts/Arial.ttf", int(400 / binning))
+    # paste all images in their position
+    for _, row in rois_df.iterrows():
+        # get the group_name for that roi
+        g_name = '-'.join([sel_mroi_name, row.roiID])
+        # get image and paste circles
+        sub_im = inspect_cells_in_ROI(df, indexes_to_plot, g_name, [channel],
+                                      cir_radius=cir_radius, binning=binning,
+                                      tdtomato_thr=tdtomato_thr, plot_cellprofiler=False)
+        # get coordinates
+        x_coord = int((int(row.high_res_x_pos) - xmin) / binning)
+        y_coord = int((int(row.high_res_y_pos) - ymin) / binning)
+        # paste in the big image
+        im.paste(sub_im, (x_coord, y_coord))
+        # write the number of the ROI
+        d.text((x_coord, y_coord), row.roiID,
+               font=fnt, fill=(0, 0, 255))
+
+    return (im)
