@@ -178,6 +178,18 @@ def PH3_data_reader(CPpath):
     cell_objects = pd.read_csv(open(CPpath + co_filename))
     cell_objects = cell_objects.apply(pd.to_numeric)
 
+    # check if 'CellSurround.csv' is in the directory and read
+    co_filename = 'CellSurround.csv'
+    assert co_filename in filenamesCSV, 'Could not find file {0}'.format(co_filename)
+    cell_surround = pd.read_csv(open(CPpath + co_filename))
+    cell_surround = cell_surround.apply(pd.to_numeric)
+
+    # merge the two dataframes
+    df_comb_1 = pd.merge(cell_objects, cell_surround,
+                         left_index=True, right_index=True,
+                         suffixes=('_cells', '_surround'),
+                         validate='one_to_one')
+
     # check if 'Image.csv' is in the directory and read
     id_filename = 'Image.csv'
     assert id_filename in filenamesCSV, 'Could not find file {0}'.format(id_filename)
@@ -187,7 +199,8 @@ def PH3_data_reader(CPpath):
     df_parsed = image_data.apply(parse_image_info, col_name='FileName_Channel1', axis=1)
 
     # merge the two datasets
-    df_comb = pd.merge(cell_objects, df_parsed, on='ImageNumber')
+    df_comb = pd.merge(df_comb_1, df_parsed,
+                       left_on='ImageNumber_cells', right_on='ImageNumber')
 
     # select and reformat the columns
     df_comb = df_comb[[
@@ -198,23 +211,24 @@ def PH3_data_reader(CPpath):
         'Side',
         'AP',
         'ROI',
-        'ObjectNumber',
-        'Intensity_MedianIntensity_Channel2',
-        'Intensity_MedianIntensity_Channel3',
-        'Intensity_MedianIntensity_Channel4',
-        'Intensity_MeanIntensity_Channel2',
-        'Intensity_MeanIntensity_Channel3',
-        'Intensity_MeanIntensity_Channel4',
+        'ObjectNumber_cells',
+        'Intensity_MeanIntensity_Channel2_cells',
+        'Intensity_MeanIntensity_Channel3_cells',
+        'Intensity_MeanIntensity_Channel4_cells',
+        'ObjectNumber_surround',
+        'Intensity_MeanIntensity_Channel2_surround',
+        'Intensity_MeanIntensity_Channel3_surround',
+        'Intensity_MeanIntensity_Channel4_surround',
         'Location_Center_X',
         'Location_Center_Y',
         'PathName_Channel1']]
 
-    df_comb = df_comb.rename(columns={'Intensity_MedianIntensity_Channel2': 'MedianI_C2',
-                                      'Intensity_MedianIntensity_Channel3': 'MedianI_C3',
-                                      'Intensity_MedianIntensity_Channel4': 'MedianI_C4',
-                                      'Intensity_MeanIntensity_Channel2': 'MeanI_C2',
-                                      'Intensity_MeanIntensity_Channel3': 'MeanI_C3',
-                                      'Intensity_MeanIntensity_Channel4': 'MeanI_C4',
+    df_comb = df_comb.rename(columns={'Intensity_MeanIntensity_Channel2_cells': 'I_cell_C2',
+                                      'Intensity_MeanIntensity_Channel3_cells': 'I_cell_C3',
+                                      'Intensity_MeanIntensity_Channel4_cells': 'I_cell_C4',
+                                      'Intensity_MeanIntensity_Channel2_surround': 'I_surround_C2',
+                                      'Intensity_MeanIntensity_Channel3_surround': 'I_surround_C3',
+                                      'Intensity_MeanIntensity_Channel4_surround': 'I_surround_C4',
                                       'Location_Center_X': 'Center_X',
                                       'Location_Center_Y': 'Center_Y'})
 

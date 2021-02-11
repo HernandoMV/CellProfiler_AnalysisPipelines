@@ -79,27 +79,22 @@ def plotRabiesCell(seriesData, mainPath, window=30, lut='plasma'):
     return new_im
 
 
-def plotPH3Cell(seriesData, mainPath, window=30, lut='plasma'):
+def plotPH3Cell(seriesData, datapath, window=30, lut='plasma'):
     # makes a composite plot to show the data and the processed data
     assert isinstance(seriesData, pd.Series), 'Data not pandas series'
 
-    # find path name of image eg:
-    # A2A01_95_Slide-1_slice-6_manualROI-R-Tail_squareROI-1_channel-1.tif
-    Base_name = seriesData[['AnimalID', 'ExperimentalCondition']].str.cat(sep='_') + \
-        '_Slide-' + seriesData.Slide + \
-        '_slice-' + seriesData.Slice + '_manualROI-' + seriesData.Side + '-' + seriesData.AP + \
-        '_squareROI-' + seriesData.ROI + '_'
+    # find path name of image:
+    C2name = os.path.join(datapath, 'ROIs--Gce_processed',
+                          gf.make_image_name_from_series(seriesData, channel=2))
+    C3name = os.path.join(datapath, 'ROIs--Gce_processed',
+                          gf.make_image_name_from_series(seriesData, channel=3))
+    C4name = os.path.join(datapath, 'ROIs--Gce_processed',
+                          gf.make_image_name_from_series(seriesData, channel=4))
 
-    C2name = Base_name + 'channel-2.tif'
-    C3name = Base_name + 'channel-3.tif'
-    C4name = Base_name + 'channel-4.tif'
-
-    part2 = '/'.join(seriesData.PathName_Channel1.split('\\'))[2:]
-    images_path = '/mnt/c' + part2 + '/'
     # open
-    c2_image = Image.open(images_path + C2name).convert('L')
-    c3_image = Image.open(images_path + C3name).convert('L')
-    c4_image = Image.open(images_path + C4name).convert('L')
+    c2_image = Image.open(C2name).convert('L')
+    c3_image = Image.open(C3name).convert('L')
+    c4_image = Image.open(C4name).convert('L')
     # crop
     coord_x = int(seriesData['Center_X'])
     coord_y = int(seriesData['Center_Y'])
@@ -112,7 +107,10 @@ def plotPH3Cell(seriesData, mainPath, window=30, lut='plasma'):
     c4_image = ChangeLUT(c4_image, lut)
 
     # get the processed data
-    PI_name = mainPath + Base_name + 'channel-1_Result_Overlay.tiff'
+    Base_name = gf.make_image_name_from_series(seriesData, channel=1).split('.tif')[0]
+    PI_name = os.path.join(datapath,
+                           'Cell_profiler_output',
+                           Base_name + '_Result_Overlay.tiff')
     ProcessedImage = Image.open(PI_name)
     # crop
     ProcessedImage = cropImage(ProcessedImage, [coord_x, coord_y], window)
@@ -131,23 +129,16 @@ def plotPH3Cell(seriesData, mainPath, window=30, lut='plasma'):
     return new_im
 
 
-def plotPH3Channel(seriesData, channel=1, window=30, lut='plasma'):
+def plotPH3Channel(seriesData, datapath, channel=1, window=30, lut='plasma'):
     # plots a single channel
     assert isinstance(seriesData, pd.Series), 'Data not pandas series'
 
     # find path name of image eg:
-    # A2A01_95_Slide-1_slice-6_manualROI-R-Tail_squareROI-1_channel-1.tif
-    Base_name = seriesData[['AnimalID', 'ExperimentalCondition']].str.cat(sep='_') + \
-        '_Slide-' + seriesData.Slide + \
-        '_slice-' + seriesData.Slice + '_manualROI-' + seriesData.Side + '-' + seriesData.AP + \
-        '_squareROI-' + seriesData.ROI + '_'
-
-    Cname = Base_name + 'channel-' + str(channel) + '.tif'
-
-    part2 = '/'.join(seriesData.PathName_Channel1.split('\\'))[2:]
-    images_path = '/mnt/c' + part2 + '/'
+    imdir = os.path.join(datapath,
+                         'ROIs--Gce_processed',
+                         gf.make_image_name_from_series(seriesData, channel=channel))
     # open
-    c_image = Image.open(images_path + Cname).convert('L')
+    c_image = Image.open(imdir).convert('L')
 
     # crop
     coord_x = int(seriesData['Center_X'])
@@ -322,7 +313,8 @@ def plot_channel_of_indexes(fig, axs, indexes, df, channel, window, lut):
             if col_number < len(set_of_idx):
                 i = set_of_idx[col_number]
                 # plt.title(str(thresholds[counter]) + " - " + str(i))
-                CellImage = plotPH3Channel(df.loc[i], channel=channel, window=window, lut=lut)
+                CellImage = plotPH3Channel(df.loc[i], df.attrs['datapath'],
+                                           channel=channel, window=window, lut=lut)
                 ax.imshow(CellImage)
     fig.tight_layout()
 
@@ -387,13 +379,15 @@ def inspect_cells_in_ROI(df, indexes_to_plot, g_name, channels, cir_radius, binn
         cir_coord = (c_x - cir_radius, c_y - cir_radius, c_x + cir_radius, c_y + cir_radius)
         cir_coord_list.append(cir_coord)
 
-        # TODO: make a legend for this
+        cir_color_list.append('red')
+        # TODO: make a legend for this and change the way it is implemented.
+        '''
         # assign different color
         if df.loc[index_of_cell].MeanI_C3 > tdtomato_thr:
             cir_color_list.append('red')
         else:
             cir_color_list.append('green')
-
+        '''
     # list to store the images
     im_list = []
 
@@ -463,7 +457,9 @@ def get_cp_image(df):
     param df: dataframe. Needs data path as attributes
     '''
     Base_name = gf.make_image_name_from_series(df.iloc[0], channel=1).split('.tif')[0]
-    PI_name = df.attrs['datapath'] + 'Cell_profiler_output/' + Base_name + '_Result_Overlay.tiff'
+    PI_name = os.path.join(df.attrs['datapath'],
+                           'Cell_profiler_output',
+                           Base_name + '_Result_Overlay.tiff')
     concat_im = Image.open(PI_name)
 
     return concat_im
