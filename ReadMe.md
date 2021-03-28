@@ -6,12 +6,15 @@ This pipeline analyses PH3 data acquired with the Slide Scanner microscope, and 
  1. Slice brains (A2A x Ai14) at 30um
  2. Stain for DARPP32 in green and PH3 in far red, and DAPI
  3. Image at 40x in the Slide Scanner the full slices
- 4. Process them with They are CZI_SlideScanner_ROIsubdivider.py (in Fiji Custom repo)
+ 4. Process them with They are CZI_SlideScanner_ROIsubdivider.py (in Fiji_Custom repo)
  5. Run Group_convert_and_enhance.py (in Fiji Custom repo)
- 7. Run Inmuno_4channels_20210107.cpproj in CellProfiler_protocols
- 8. Find the corresponding ARA slices (output of CZI_SlideScanner_ROIsubdivider.py) in MoBIE, save position and screenshot (see Histology_to_ARA repo)
- 9. Register the slices using elastix (in repo Histology_to_ARA)
- 10. Run the notebook Inmuno_4channels_analysis.ipynb for each mouse
+ 6. Downsample (3 times works ok) the DARPP32 channel. You can use ImageSequence_Downsampler.ijm in Fiji_Custom repo.
+ 7. Run cellpose (https://github.com/MouseLand/cellpose) on the downsampled images: 
+`python -m cellpose --dir ~/Desktop/test/raw--downsized-3/ --save_tif --no_npy --diameter 28.5 --pretrained_model cyto --chan 0 --use_gpu`
+ 8. Run Inmuno_4channels_20210107.cpproj in CellProfiler_protocols
+ 9. Find the corresponding ARA slices (output of CZI_SlideScanner_ROIsubdivider.py) in MoBIE, save position and screenshot (see Histology_to_ARA repo)
+ 10. Register the slices using elastix (in repo Histology_to_ARA)
+ 11. Run the notebook Inmuno_4channels_analysis.ipynb for each mouse
 
 
 # For RNAscope
