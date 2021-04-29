@@ -112,7 +112,8 @@ def get_manual_rois_file_path(df):
     generates the path to the file with the rois information
     '''
     rois_file_path = 'ROIs/000_ManualROIs_info/'
-    manual_roi_path = os.path.join(df.attrs['datapath'],
+    datapath = get_animal_datapath(df)
+    manual_roi_path = os.path.join(datapath,
                                    rois_file_path,
                                    make_core_name_from_series(df.iloc[0]))
     manual_roi_path = '_'.join([manual_roi_path,
@@ -131,3 +132,9 @@ def get_roi_position_extremes(df):
     max_y = np.max(pd.to_numeric(df.high_res_y_pos))
 
     return (min_x, max_x, min_y, max_y)
+
+
+def get_animal_datapath(df):
+    mainpath = df.attrs['datapath']
+    animal_id = df.AnimalID.unique()[0]
+    return os.path.join(mainpath, animal_id)

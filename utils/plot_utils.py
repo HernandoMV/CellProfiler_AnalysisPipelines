@@ -313,7 +313,8 @@ def plot_channel_of_indexes(fig, axs, indexes, df, channel, window, lut):
             if col_number < len(set_of_idx):
                 i = set_of_idx[col_number]
                 # plt.title(str(thresholds[counter]) + " - " + str(i))
-                CellImage = plotPH3Channel(df.loc[i], df.attrs['datapath'],
+                datapath = os.path.join(df.attrs['datapath'], df.loc[i].AnimalID)
+                CellImage = plotPH3Channel(df.loc[i], datapath,
                                            channel=channel, window=window, lut=lut)
                 ax.imshow(CellImage)
     fig.tight_layout()
@@ -401,9 +402,10 @@ def inspect_cells_in_ROI(df, indexes_to_plot, g_name, channels, cir_radius, binn
         for col, cir_coord in enumerate(cir_coord_list):
             draw_ellipse(concat_im, cir_coord, outline=cir_color_list[col], width=cir_radius / 4)
 
+    datapath = gf.get_animal_datapath(df)
     # for each channel
     for channel in channels:
-        imdir = os.path.join(df.attrs['datapath'],
+        imdir = os.path.join(datapath,
                              'ROIs--Gce_processed',
                              gf.make_image_name_from_series(df_cir.iloc[0], channel=channel))
         im = Image.open(imdir)
@@ -457,7 +459,8 @@ def get_cp_image(df):
     param df: dataframe. Needs data path as attributes
     '''
     Base_name = gf.make_image_name_from_series(df.iloc[0], channel=1).split('.tif')[0]
-    PI_name = os.path.join(df.attrs['datapath'],
+    datapath = gf.get_animal_datapath(df)
+    PI_name = os.path.join(datapath,
                            'Cell_profiler_output',
                            Base_name + '_Result_Overlay.tiff')
     concat_im = Image.open(PI_name)
@@ -472,7 +475,8 @@ def get_reg_image(df):
     '''
     reg_path = '/ROIs/000_Slices_for_ARA_registration/'
     Base_name = gf.make_image_name_from_series(df.iloc[0], channel=1).split('_manualROI')[0]
-    PI_name = df.attrs['datapath'] + reg_path + Base_name + '.tif'
+    datapath = gf.get_animal_datapath(df)
+    PI_name = datapath + reg_path + Base_name + '.tif'
     reg_im = Image.open(PI_name)
 
     return reg_im
