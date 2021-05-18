@@ -222,7 +222,8 @@ def PH3_data_reader(CPpath):
         'Location_Center_X',
         'Location_Center_Y',
         'PathName_Channel1',
-        'Parent_cellpose_objects_resized_shrunk']]
+        'Parent_cellpose_objects_resized_shrunk',
+        'Parent_cellpose_objects_d2_resized_shrunk']]
 
     df_comb = df_comb.rename(columns={'Intensity_MeanIntensity_Channel2_cells': 'I_cell_C2',
                                       'Intensity_MeanIntensity_Channel3_cells': 'I_cell_C3',
@@ -232,7 +233,8 @@ def PH3_data_reader(CPpath):
                                       'Intensity_MeanIntensity_Channel4_surround': 'I_surround_C4',
                                       'Location_Center_X': 'Center_X',
                                       'Location_Center_Y': 'Center_Y',
-                                      'Parent_cellpose_objects_resized_shrunk': 'cellpose_SPN'})
+                                      'Parent_cellpose_objects_resized_shrunk': 'cellpose_SPN',
+                                      'Parent_cellpose_objects_d2_resized_shrunk': 'cellpose_d2'})
 
     df_comb["AnimalID"] = df_comb["AnimalID"].astype("category")
     df_comb["ExperimentalCondition"] = df_comb["ExperimentalCondition"].astype("category")
