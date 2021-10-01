@@ -483,7 +483,7 @@ def get_reg_image(df):
 
 
 def get_concat_image_from_rois(df_raw, indexes_to_plot, sel_mroi_name, channel,
-                               cir_radius, binning=1, tdtomato_thr=-1):
+                               cir_radius, data_path, binning=1, tdtomato_thr=-1):
     '''
     reconstructs the image from square rois and their initial positions
     param df_raw: dataframe with information about the cells
@@ -496,7 +496,7 @@ def get_concat_image_from_rois(df_raw, indexes_to_plot, sel_mroi_name, channel,
     df = df_raw[df_raw.manual_roi_name == sel_mroi_name]
 
     # get the position of every ROI in a dataframe
-    manual_roi_path = gf.get_manual_rois_file_path(df)
+    manual_roi_path = gf.get_manual_rois_file_path(df.iloc[0], data_path)
     rois_df = gf.create_dataframe_from_roi_file(manual_roi_path)
 
     # find the width and height (CURRENTLY THEY HAVE TO BE THE SAME (L)) of the rois
@@ -514,7 +514,7 @@ def get_concat_image_from_rois(df_raw, indexes_to_plot, sel_mroi_name, channel,
     im = Image.new('RGB', (im_width, im_height))
     # text object
     d = ImageDraw.Draw(im)
-    fnt = ImageFont.truetype("/mnt/c/Windows/Fonts/Arial.ttf", int(400 / binning))
+    fnt = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", int(400 / binning))
     # paste all images in their position
     for _, row in rois_df.iterrows():
         # get the group_name for that roi

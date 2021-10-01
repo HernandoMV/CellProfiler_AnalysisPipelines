@@ -247,13 +247,21 @@ def parse_image_info(df, col_name):
     # add columns to the dataset with information about the experiment
     # The format expected looks like this:
     # CONT01_control_slide-14_slice-1_manualROI-L-TailPosterior_squareROI-1_channel-1.tif
+    # or CONT01_control_slide-14_slice-1_manualROI-Caudoputamen_squareROI-1_channel-1.tif
     name_pieces = df[col_name].split('_')
     df['AnimalID'] = name_pieces[0]
     df['ExperimentalCondition'] = name_pieces[1]
     df['Slide'] = name_pieces[2].split('-')[1]
     df['Slice'] = name_pieces[3].split('-')[1]
-    df['Side'] = name_pieces[4].split('-')[1]
-    df['AP'] = name_pieces[4].split('-')[2]
+    # ROI can be manual or automatic (registration-based)
+    roi_name = name_pieces[4].split('-')
+    if len(roi_name) == 3:
+        df['Side'] = roi_name[1]
+        df['AP'] = roi_name[2]
+    elif len(roi_name) == 2:
+        df['Side'] = 'Both'
+        df['AP'] = roi_name[1]
+     
     df['ROI'] = name_pieces[5].split('-')[1]
 
     return df
