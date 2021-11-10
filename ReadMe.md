@@ -1,4 +1,5 @@
 # Inmuno_4channels_analysis.ipynb
+ DEPRECATED: see readme file in Fiji Custom repo dev
 This pipeline analyses PH3 data acquired with the Slide Scanner microscope, and outputs:
  - identification of cells of interest (PH3+) and whether they are D1 or D2
  - the position of cells of interest in the ARA
