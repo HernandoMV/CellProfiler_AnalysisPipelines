@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import os
 import random
 from utils import generic_functions as gf
+import SimpleITK as sitk
+import seaborn as sns
 
 
 def see_object(obj_number, df, segmented_image, original_image, crop_value):
@@ -533,3 +535,98 @@ def get_concat_image_from_rois(df_raw, indexes_to_plot, sel_mroi_name, channel,
                font=fnt, fill=(0, 0, 255))
 
     return (im)
+
+
+def show_atlas_image(ax, section, dimming=1, cropping=None):
+    # # laptop:
+    # ARA_file = "/C:/Users/herny/Desktop/SWC/Data/Anatomy/ARA_25_micron_mhd/template.mhd"
+    # nailgun:
+    ARA_file = "/home/hernandom/data/Anatomy/ARA_25_micron_mhd/template.mhd"
+    
+    # resolution of the atlas
+    RES = 25
+    
+    # read the atlas
+    ARA = sitk.GetArrayFromImage(sitk.ReadImage(ARA_file))
+    
+    # apply dimming
+    im_to_show = ARA[section]/dimming
+    
+    # invert image
+    im_to_show = np.abs(255 - im_to_show)
+    
+    # crop
+    if cropping is not None:
+        # transform to pixels
+        cropping_mod = np.array(cropping)
+        cropping_mod = 1000 * cropping_mod / RES
+        cropping_mod = cropping_mod.astype(int)
+        im_to_show = im_to_show[cropping_mod[2]:cropping_mod[3], cropping_mod[0]:cropping_mod[1]]
+    
+    # extent to maintain the data values
+    ax.imshow(im_to_show, cmap='gray', vmin=0, vmax=255,
+              extent=(cropping[0], cropping[1], cropping[2], cropping[3]),
+              origin='lower')
+    
+    return ax
+
+
+def plot_cells_in_tail(df, ax, cell_type='all', side='right', alpha=0.4, section=250, section_dimming=5, palette='deep', show_atlas=True, flip_axis=True):
+
+    color = 'cell_label'
+    hue_order = ['d1', 'd2']
+    
+    ARA_midline = 11.4 / 2 # from the publication of the latest reference
+    
+    # cell type to plot
+    if cell_type == 'all':
+        celltype_mask = np.array([True] * len(df))
+    else:
+        celltype_mask = df.cell_label == cell_type
+    
+    # brain side to plot
+    # default coordinates to plot the atlas are right
+    xlimlow, xlimhigh = (8.3, 9.8)
+    ylimlow, ylimhigh = (2.5, 5.5)
+    
+    if side == 'right': # in ARA, the bigger the ML value the more to the right
+        side_mask = df.ARA_ml > ARA_midline
+    if side == 'left':
+        side_mask = df.ARA_ml < ARA_midline
+        #redefine x coordinates
+        xlimlow, xlimhigh = (2 * ARA_midline - xlimhigh, 2 * ARA_midline - xlimlow)
+    if side == 'both': # deal with this fold below
+        side_mask = np.array([True] * len(df))
+    
+    # merge masks
+    total_mask = np.logical_and(celltype_mask, side_mask)
+    
+    # define data to plot
+    df_to_plot = df[total_mask].copy()
+    
+    if side == 'both':
+        # fold data into the right
+        lhm = df_to_plot.ARA_ml < ARA_midline
+        df_to_plot.at[lhm, 'ARA_ml'] = - df_to_plot[lhm].ARA_ml + 2 * ARA_midline 
+        
+    # plot the image of the tail
+    if show_atlas:
+        show_atlas_image(ax=ax, section=section, dimming=section_dimming,
+                        cropping=[xlimlow, xlimhigh, ylimlow, ylimhigh])
+    
+    # plot the points again on top of the image
+    ax = sns.scatterplot(data=df_to_plot, x='ARA_ml', y='ARA_dv', alpha=alpha, ax=ax,
+                        hue=color, hue_order=hue_order, palette=palette)
+    
+    # make isometric
+    ax.axis('equal')
+    
+    # flip y axis as 0 is in the bottom
+    if flip_axis:
+        ax.invert_yaxis()
+    
+    # remove legend
+    ax.get_legend().remove()
+    
+    return ax
+
