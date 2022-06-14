@@ -364,8 +364,16 @@ def inspect_cells_in_ROI(df, indexes_to_plot, g_name, channels, cir_radius, binn
     param tdtomato_thr: to differentiate between d1 and d2
     param plot_cellprofiler: boolean to show the cell profiler output
     '''
+
+    # TODO: deal with the case where there are no identified cells in that roi
+
+
     # subselect the dataframe
     df_cir = df[df.group_name == g_name]
+    # df_cir can be empty, if so: return empty image
+    if df_cir.shape[0] == 0:
+        return Image.new('RGB', (10, 10))
+
     # get the indexes that need circling
     idxs_to_circle = np.intersect1d(indexes_to_plot, df_cir.index.values)
 
@@ -521,10 +529,11 @@ def get_concat_image_from_rois(df_raw, indexes_to_plot, sel_mroi_name, channel,
     for _, row in rois_df.iterrows():
         # get the group_name for that roi
         g_name = '-'.join([sel_mroi_name, row.roiID])
+
         # get image and paste circles
         sub_im = inspect_cells_in_ROI(df, indexes_to_plot, g_name, [channel],
-                                      cir_radius=cir_radius, binning=binning,
-                                      tdtomato_thr=tdtomato_thr, plot_cellprofiler=False)
+                                    cir_radius=cir_radius, binning=binning,
+                                    tdtomato_thr=tdtomato_thr, plot_cellprofiler=False)
         # get coordinates
         x_coord = int((int(row.high_res_x_pos) - xmin) / binning)
         y_coord = int((int(row.high_res_y_pos) - ymin) / binning)
@@ -532,7 +541,7 @@ def get_concat_image_from_rois(df_raw, indexes_to_plot, sel_mroi_name, channel,
         im.paste(sub_im, (x_coord, y_coord))
         # write the number of the ROI
         d.text((x_coord, y_coord), row.roiID,
-               font=fnt, fill=(0, 0, 255))
+            font=fnt, fill=(0, 0, 255))
 
     return (im)
 
